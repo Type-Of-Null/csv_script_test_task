@@ -1,16 +1,21 @@
 import csv
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 
-def reader_csv(file_path: str) -> List[Dict[str, Any]]:
+def reader_csv(file_path: str) -> list[dict[str, Any]]:
     data = []
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Файл по указанному пути: {file_path} не найден")
 
     with open(path, "r", encoding="utf-8", newline="") as file:
-        sample = file.read(1024)
+        try:
+            sample = file.read(1024)
+            if not sample:
+                raise ValueError("В файле отсутствуют данные")
+        except Exception as e:
+            raise RuntimeError(f"Ошибка {e}. Невозможно прочитать файл")
         file.seek(0)
         dialect = csv.Sniffer().sniff(sample)
         reader = csv.DictReader(file, dialect=dialect)
