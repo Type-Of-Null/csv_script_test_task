@@ -9,29 +9,38 @@ class OperateCSV:
         data = []
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(f"Файл по указанному пути: {file_path} не найден")
+            raise FileNotFoundError(f"Файл {file_path} не найден")
 
         with open(path, "r", encoding="utf-8", newline="") as file:
             # Считываем 1024 символа для определения диалекта
             try:
                 sample = file.read(1024)
-                if not sample:
-                    raise ValueError(f"В файле: {file_path} отсутствуют данные")
             except Exception as e:
-                raise RuntimeError(f"Ошибка {e}. Невозможно прочитать файл")
+                raise RuntimeError(f"Ошибка чтения файла {file_path}: {e}")
             file.seek(0)
 
             # Распознаем полученные данные
             try:
-                dialect = csv.Sniffer().sniff(sample)
+                sniffer = csv.Sniffer()
+                dialect = sniffer.sniff(sample)
                 reader = csv.DictReader(file, dialect=dialect)
+                has_header = sniffer.has_header(sample)
             except csv.Error:
                 raise ValueError(f"Файл {file_path} не является csv файлом")
 
-            if reader.fieldnames is None:
+            # Проверка наличия заголовков
+            if not has_header:
                 raise ValueError(f"В файле {file_path} нет заголовков")
 
+            # Пропуск пустых строк
             for row in reader:
-                data.append(row)
+                if row:
+                    data.append(row)
+
+            # Проверка наличия данных
+            if not data:
+                raise ValueError(
+                    f"Файл {file_path} не содержит данных (только заголовки): "
+                )
 
         return data
