@@ -12,15 +12,22 @@ class OperateCSV:
             raise FileNotFoundError(f"Файл по указанному пути: {file_path} не найден")
 
         with open(path, "r", encoding="utf-8", newline="") as file:
+            # Считываем 1024 символа для определения диалекта
             try:
                 sample = file.read(1024)
                 if not sample:
-                    raise ValueError("В файле отсутствуют данные")
+                    raise ValueError(f"В файле: {file_path} отсутствуют данные")
             except Exception as e:
                 raise RuntimeError(f"Ошибка {e}. Невозможно прочитать файл")
             file.seek(0)
-            dialect = csv.Sniffer().sniff(sample)
-            reader = csv.DictReader(file, dialect=dialect)
+
+            # Распознаем полученные данные
+            try:
+                dialect = csv.Sniffer().sniff(sample)
+                reader = csv.DictReader(file, dialect=dialect)
+            except csv.Error:
+                raise ValueError(f"Файл {file_path} не является csv файлом")
+
             if reader.fieldnames is None:
                 raise ValueError(f"В файле {file_path} нет заголовков")
 
