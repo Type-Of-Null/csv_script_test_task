@@ -1,3 +1,7 @@
+import argparse
+import sys
+from tabulate import tabulate
+
 from src.service.operate_csv import OperateCSV
 from src.service.operate_data import OperateData
 
@@ -20,7 +24,21 @@ def load_and_process_data(file_paths: list[str]) -> dict[str, float]:
 
 
 def main() -> None:
-    print(load_and_process_data(["data/economic1.csv", "data/economic2.csv"]))
+    parser = argparse.ArgumentParser(
+        description="Обработка csv файлов и генерация отчетов"
+    )
+    parser.add_argument(
+        "--files",
+        nargs="+",
+        required=True,
+        help="CSV файлы для обработки",
+    )
+    parser.add_argument(
+        "--report",
+        choices=["average-gdp"],
+        default="average-gdp",
+        help="Вид отчета",
+    )
 
 
 if __name__ == "__main__":
